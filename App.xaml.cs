@@ -1,10 +1,9 @@
 ﻿using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Wpf.Ui;
 
 namespace EphemeralScreenshots
 {
@@ -23,7 +22,7 @@ namespace EphemeralScreenshots
             .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)); })
             .ConfigureServices((context, services) =>
             {
-                throw new NotImplementedException("No service or window was registered.");
+                services.AddSingleton<MainWindow>();
             }).Build();
 
         /// <summary>
@@ -40,6 +39,7 @@ namespace EphemeralScreenshots
         private async void OnStartup(object sender, StartupEventArgs e)
         {
             await _host.StartAsync();
+            Services.GetRequiredService<MainWindow>().Show();
         }
 
         /// <summary>
