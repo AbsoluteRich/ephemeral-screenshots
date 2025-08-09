@@ -1,7 +1,9 @@
 import os
 import threading
 
+from PIL import Image
 import platformdirs
+import pystray
 import send2trash
 from watchdog.events import FileCreatedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -28,6 +30,15 @@ if __name__ == "__main__":
     screenshot_handler = ScreenshotTaken()
     observer.schedule(screenshot_handler, SCREENSHOT_FOLDER)
     observer.start()
-    input()
+
+    with open("icon.png", "rb") as f:
+        icon = pystray.Icon(TITLE, Image.open(f))
+
+        icon.menu = pystray.Menu(
+            pystray.MenuItem(TITLE, enabled=False, action=lambda: None),
+            pystray.MenuItem("Quit", lambda: icon.stop()),
+        )
+        icon.run()
+
     observer.stop()
     observer.join()
