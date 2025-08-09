@@ -1,11 +1,10 @@
 import os
-import tkinter as tk
-from tkinter import ttk
+import threading
 
 import platformdirs
-import sv_ttk
-import watchdog
-import watchdog.observers  # observers is a separate submodule, which isn't imported with watchdog
+import send2trash
+from watchdog.events import FileCreatedEvent, FileSystemEventHandler
+from watchdog.observers import Observer
 
 padding = 30
 widget_padding = 5
@@ -13,35 +12,22 @@ TITLE = "Ephemeral Screenshots"
 SCREENSHOT_FOLDER = os.path.join(platformdirs.user_pictures_dir(), "Screenshots")
 
 
-def screenshot_taken(_: tk.Event):
-    print()
+def annihilate_file(path: str, **_):
+    send2trash.send2trash(path)
+    print(f"Annihilated {path}")
 
 
-class ScreenshotTaken(watchdog.events.FileSystemEventHandler):
-    def on_any_event():
-        print("Test!")
+class ScreenshotTaken(FileSystemEventHandler):
+    def on_created(self, event: FileCreatedEvent):
+        print(f"{event.src_path} detected, annihilating in 10 seconds")
+        threading.Timer(10, annihilate_file, args=[event.src_path]).start()
 
 
 if __name__ == "__main__":
-    observer = watchdog.observers.Observer()
-    observer.schedule(watchdog.events.FileCreatedEvent, SCREENSHOT_FOLDER)
+    observer = Observer()
+    screenshot_handler = ScreenshotTaken()
+    observer.schedule(screenshot_handler, SCREENSHOT_FOLDER)
     observer.start()
-
-    root = tk.Tk()
-    root.title(TITLE)
-
-    frame = tk.Frame()
-    frame.grid(padx=padding, pady=padding)
-
-    lbl_status = ttk.Label(text="No screenshot detected...", master=frame)
-    btn_screenie = ttk.Button(text="Take Screenshot", master=frame)
-    btn_screenie.bind("<Button-1>", screenshot_taken)
-
-    lbl_status.pack(padx=widget_padding, pady=widget_padding)
-    btn_screenie.pack(padx=widget_padding, pady=widget_padding)
-
-    sv_ttk.set_theme("dark")
-    root.mainloop()
-
+    input()
     observer.stop()
     observer.join()
