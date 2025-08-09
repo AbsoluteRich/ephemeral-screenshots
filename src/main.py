@@ -35,7 +35,7 @@ if __name__ == "__main__":
         icon = pystray.Icon(TITLE, Image.open(f))
 
         icon.menu = pystray.Menu(
-            pystray.MenuItem(TITLE, enabled=False, action=lambda: None),
+            pystray.MenuItem(TITLE, enabled=False, action=lambda: ...),
             pystray.MenuItem("Quit", lambda: icon.stop()),
         )
         icon.run()
